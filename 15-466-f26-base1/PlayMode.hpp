@@ -24,10 +24,16 @@ struct PlayMode : Mode {
 	} left, right;
 
 	//paddle:
-	glm::vec2 paddle_at = glm::vec2(112.0f, 16.0f);
+	glm::vec2 paddle_at = glm::vec2(104.0f, 16.0f);
+	uint8_t paddle_tiles = 6;
 
 	//ball:
 	glm::vec2 ball_at = glm::vec2(124.0f, 80.0f);
+	glm::vec2 ball_velocity = glm::vec2(70.0f, 90.0f);
+
+	//bricks:
+	uint32_t total_bricks = 72;
+	uint32_t remaining_bricks = 72;
 
 	//----- drawing handled by PPU466 -----
 	PPU466 ppu;
