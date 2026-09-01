@@ -6,11 +6,11 @@ Design: A Breakout-style game where the paddle becomes shorter as the player des
 
 Screen Shot:
 
-![Screen Shot](screenshot.png)
+![Screen Shot](15-466-f26-base1/screenshot.png)
 
 How Your Asset Pipeline Works:
 
-The source artwork for the game is stored in sprites/sprites.png. It contains four 8x8 tiles for the empty tile, paddle, ball, and brick. ![Source Sprites](sprites/sprites.png)
+The source artwork for the game is stored in sprites/sprites.png. It contains four 8x8 tiles for the empty tile, paddle, ball, and brick. ![Source Sprites](15-466-f26-base1/sprites/sprites.png)
 The asset pipeline uses `asset_converter.cpp` to load `sprites.png` with `load_png`. The converter reads the RGBA pixel data and converts each 8x8 image tile into the two bitplanes. At the same time set the corresponding palettes. 
 The converter writes the processed runtime data to `generated/assets.hpp`. This generated header contains the tile and palette data used by the game. 
 `PlayMode.cpp` loads these generated tiles and palettes into `ppu.tile_table` and `ppu.palette_table`. 
