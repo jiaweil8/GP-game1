@@ -1,6 +1,6 @@
 # Shrinking Breakout
 
-Author: Jiawei Li || Lee   andrewid: jiaweil8
+Author: Jiawei Li || Lee            andrewid: jiaweil8
 
 Design: A Breakout-style game where the paddle becomes shorter as the player destroys more bricks. 
 
