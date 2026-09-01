@@ -14,6 +14,8 @@ struct PlayMode : Mode {
 	virtual bool handle_event(SDL_Event const &, glm::uvec2 const &window_size) override;
 	virtual void update(float elapsed) override;
 	virtual void draw(glm::uvec2 const &drawable_size) override;
+	
+	void reset_game();
 
 	//----- game state -----
 
@@ -34,6 +36,11 @@ struct PlayMode : Mode {
 	//bricks:
 	uint32_t total_bricks = 72;
 	uint32_t remaining_bricks = 72;
+
+	//game status:
+	bool game_over = false;
+	bool won = false;
+	float win_flash_timer = 0.0f;
 
 	//----- drawing handled by PPU466 -----
 	PPU466 ppu;

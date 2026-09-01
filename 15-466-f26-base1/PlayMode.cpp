@@ -24,21 +24,7 @@ PlayMode::PlayMode() {
     ppu.palette_table[1] = Assets::ball_palette;
     ppu.palette_table[2] = Assets::brick_palette;
 
-    //empty background:
-    for (auto &cell : ppu.background) {
-        cell = 0;
-    }
-
-    //corresponds to tile 3, palette 2 (brick):
-    uint16_t brick_cell = 3 | (2 << 8);
-
-    for (uint32_t y = 20; y < 25; y+=2) {
-        for (uint32_t x = 4; x < 28; ++x) {
-            ppu.background[
-                x + y * PPU466::BackgroundWidth
-            ] = brick_cell;
-        }
-    }
+    reset_game();
 }
 
 PlayMode::~PlayMode() {
@@ -56,6 +42,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
             right.pressed = true;
             return true;
         }
+        if (evt.key.key == SDLK_R && game_over) {
+        reset_game();
+        return true;
+        }
     } else if (evt.type == SDL_EVENT_KEY_UP) {
         if (evt.key.key == SDLK_LEFT) {
             left.pressed = false;
@@ -71,6 +61,21 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 void PlayMode::update(float elapsed) {
 
     constexpr float PaddleSpeed = 100.0f;
+
+    if (game_over) {
+    if (won) {
+        win_flash_timer += elapsed;
+        if (int(win_flash_timer * 4.0f) % 2 == 0) {
+            ppu.background_color = glm::u8vec3(30, 120, 30);
+        } else {
+            ppu.background_color = glm::u8vec3(0, 0, 0);
+        }
+    }
+    left.downs = 0;
+    right.downs = 0;
+    return;
+    }
+
 
     if (left.pressed) {
         paddle_at.x -= PaddleSpeed * elapsed;
@@ -148,7 +153,25 @@ void PlayMode::update(float elapsed) {
         }
     }
 
+    // new game: when bricks are depleted, adjust paddle size
+	if (remaining_bricks <= total_bricks / 3) {
+		paddle_tiles = 2;
+	} else if (remaining_bricks <= total_bricks * 2 / 3) {
+		paddle_tiles = 4;
+	} else {
+		paddle_tiles = 6;
+	}
 
+    //check game status:
+    if (remaining_bricks == 0) {
+        game_over = true;
+        won = true;
+    }
+    if (ball_at.y + 8.0f < 0.0f) {
+        game_over = true;
+        won = false;
+        ppu.background_color = glm::u8vec3(255, 0, 0);
+    }
 
     //reset button press counters:
     left.downs = 0;
@@ -156,9 +179,6 @@ void PlayMode::update(float elapsed) {
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
-
-    ppu.background_color =
-        glm::u8vec3(0x10, 0x10, 0x20);
 
     //hide all sprites first:
     for (auto &sprite : ppu.sprites) {
@@ -179,14 +199,48 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
     }
 
     //draw ball:
-    ppu.sprites[6].x =
-        uint8_t(ball_at.x);
-
-    ppu.sprites[6].y =
-        uint8_t(ball_at.y);
-
+    ppu.sprites[6].x = uint8_t(ball_at.x);
+    ppu.sprites[6].y = uint8_t(ball_at.y);
     ppu.sprites[6].index = 2;
     ppu.sprites[6].attributes = 1;
 
     ppu.draw(drawable_size);
+}
+
+void PlayMode::reset_game() {
+    //reset paddle
+    paddle_at = glm::vec2(104.0f, 16.0f);
+    paddle_tiles = 6;
+
+    //reset ball
+    ball_at = glm::vec2(124.0f, 80.0f);
+    ball_velocity = glm::vec2(70.0f, 90.0f);
+
+    //reset button press counters:
+    left.downs = 0;
+    right.downs = 0;
+    left.pressed = 0;
+    right.pressed = 0;
+    
+    //reset game state
+    game_over = false;
+    won = false;
+    win_flash_timer = 0.0f;
+
+    //reset visual state
+    ppu.background_color = glm::u8vec3(0x10, 0x10, 0x20);
+
+    //reset bricks
+    for (auto &cell : ppu.background) {
+        cell = 0;
+    }
+    uint16_t brick_cell = 3 | (2 << 8);
+    for (uint32_t y = 20; y < 25; y+=2) {
+        for (uint32_t x = 4; x < 28; ++x) {
+            ppu.background[
+                x + y * PPU466::BackgroundWidth
+            ] = brick_cell;
+        }
+    }
+    remaining_bricks = total_bricks;
 }
